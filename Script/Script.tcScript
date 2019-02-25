@@ -12,6 +12,6 @@
 		<child name="Positions" key="{9E84BC9D-5107-4CD3-B981-C590E7809CB7}" path="Positions.scs" />
 		<child name="TestRunner" key="{6C830D38-A8AD-4424-A110-2124E008950E}" path="TestRunner.js" />
 		<child name="Logistics" key="{A99F645A-E7DF-4BBD-AA55-CD3AEB4C2128}" path="Logistics.scs" />
-		<child name="StepDefinition1" key="{8607109A-0890-4AD9-AF76-D6EF8B48B13E}" path="StepDefinition1.scs" />
+		<child name="StepDefinitions" key="{0F549DDD-FE19-4D97-B1EC-1AFDD14A2754}" path="..\..\New_Copy\Symphony\Script\StepDefinitions.scs" />
 	</children>
 </Root>
