@@ -1,0 +1,146 @@
+﻿//USEUNIT LaunchApplication
+
+
+function CreateShipment()
+{
+  var MainPanel = Aliases["LogisticsShell"]["HwndSource_ribbonWindow"]["ribbonWindow"]["MainPanel"];  
+
+  InitiateShipmentCreation();
+  
+  // Create shipment 
+  var ShipmentBuilder = MainPanel["MainGrid"]["dpMiscellaneousPanel"]["ShipmentBuilder"]
+  if(ShipmentBuilder["Exists"]= true)
+  {
+   ShipmentBuilder["ShipmentBuilderGrid"]["MainGrid"]["DataRow"]["Click"]();
+   
+   //Click Add Actuals
+   ShipmentBuilder["ActualButtons"]["AddActual"]["ClickButton"]();
+   ShipmentBuilder["FullyActualize"]["ClickButton"](cbChecked);
+   ShipmentBuilder["PropagateActual"]["ClickButton"](cbChecked);
+   
+   
+   // Click on Save Shipment button
+   MainPanel["ToolBar"]["SaveData"]["ClickButton"]();
+   
+   var ShipmentMsg = MainPanel["AllTradeTypesToolBarApplet"]["txtMessage"]["WPFControlText"];
+   Log["Message"](ShipmentMsg)// "Shipment# 6771 Created Successfully.")
+   
+   Project["Variables"]["ShipmentID"] = aqString["SubString"](ShipmentMsg,10, 15);
+   
+   VerifyShipmentCreation();
+  }
+  else
+  {
+    Log["Message"]("Shipment was not created.")
+  }
+}
+
+function InitiateShipmentCreation()
+{
+  // Launch Logistics application
+  LaunchLogistics();
+   
+  // Search for Trades
+  SearchTrades();
+ 
+  // Select Trades for shipment creation
+  SelectTrades();
+  
+  // Click on Create Shipment button.
+   
+  var allTradeTypesToolBarApplet = dockWindowGroup["AllTradeTypesToolBarApplet"];
+  allTradeTypesToolBarApplet["CreateShipment"]["ClickButton"]();
+}
+
+
+function SearchTrades()
+{
+  var shell = Aliases["LogisticsShell"]["HwndSource_ribbonWindow"]["ribbonWindow"];
+  
+  shell["ribbonControl"]["Panels"]["AllTrades"]["Click"](); // Click on All Trades button 
+
+  var layoutGroup = shell["MainPanel"]["tradeQuickSearchLayout"];
+  layoutGroup["GroupBox"]["Click"](); // Click on Quick Search Layout  
+  
+  layoutGroup["TradeNum"]["SetText"](Project["Variables"]["PhyTrade1"]+","+Project["Variables"]["PhyTrade2"]);
+  layoutGroup["Search"]["ClickButton"]();
+  
+  while (shell["MainPanel"]["MainGrid"]["zProgressBar"]["VisibleOnScreen"]!= false)
+  {
+    aqUtils["Delay"](500,"Waiting for the search items to load...");
+  }
+}
+
+function SelectTrades()
+{
+  var logisticsShell = Aliases["LogisticsShell"];
+  var shell = logisticsShell["HwndSource_ribbonWindow"]["ribbonWindow"];
+  var dockWindowGroup = shell["MainPanel"];
+  
+  dockWindowGroup["MainGrid"]["SplitViewGrid"]["Table1"]["MainGrid"]["DataRow"]["Click"]()
+  dockWindowGroup["MainGrid"]["SplitViewGrid"]["Table2"]["MainGrid"]["DataRow"]["Click"](-1,-1,skCtrl)
+  
+}
+function VerifyShipmentCreation()
+{
+  var logisticsShell = Aliases["LogisticsShell"];
+  var shell = logisticsShell["HwndSource_ribbonWindow"]["ribbonWindow"];
+  
+  shell["ribbonControl"]["Panels"]["btnParcels"]["Click"]()
+  logisticsShell["HwndSource_PopupRoot"]["PopupRoot"]["ButtondropdownShipmentPanel"]["Click"]();
+  Delay(500);
+  shell["MainPanel"]["MainGrid"]["userPrefToolbar"]["EditQuery"]["ClickButton"]();
+  
+  
+}
+function Test2()
+{
+  var logisticsShell = Aliases["LogisticsShell"];
+  var shell = logisticsShell["HwndSource_ribbonWindow"]["ribbonWindow"];
+  var ribbonBar = shell["ribbonControl"]["Panels"];
+  
+  var dockWindowGroup = shell["MainPanel"];
+  var layoutGroup = dockWindowGroup["tradeQuickSearchLayout"];
+ 
+
+  
+  
+  var grid = dockWindowGroup["MainGrid"];
+  var grid2 = grid["SplitViewGrid"];
+  var grid3 = grid2["Table1"]["MainGrid"];
+  
+  
+  
+  
+  grid2 = shell["MainPanel"]["MainGrid"]["ShipmentBuilderGrid"]["MainGrid"];
+  dockWindowGroup["MainGrid"]["SplitViewGrid"]["DataRow"]["DatacellLoad"]["Click"](27, 6);
+  grid["ActualButtons"]["AddActual"]["ClickButton"]();
+  grid["FullyActualize"]["ClickButton"](cbChecked);
+  grid["PropagateActual"]["ClickButton"](cbChecked);
+  var dataRow = grid2["DataRow2"];
+  OCR["Recognize"](dataRow["DatacellBrent"])["BlockByText"]("BRENT")["Click"]();
+  OCR["Recognize"](dataRow)["BlockByText"]("#1101412/1/1")["Click"]();
+  grid2["DataRow4"]["DatacellAiestactualbizTemporaryguid153ed95"]["Click"](46, 10);
+  dockWindowGroup["ToolBar"]["ClickItem"](0);
+  aqObject["CheckProperty"](allTradeTypesToolBarApplet["txtMessage"], "WPFControlText", cmpEqual, "Shipment# 6771 Created Successfully.");
+  ribbonBar["btnParcels"]["Click"](26, 30);
+  OCR["Recognize"](logisticsShell["HwndSource_PopupRoot"]["PopupRoot"]["ButtondropdownShipmentPanel"])["BlockByText"]("Shipment")["Click"]();
+  var toolBar = grid["userPrefToolbar"];
+  toolBar["cboQueries"]["DropDown"]();
+  toolBar["ClickItem"](4);
+  toolBar["ClickItem"](3);
+  var window = logisticsShell["HwndSource_Window"]["Window"];
+  var scrollViewer = window["w_scrollViewer"];
+  var button = scrollViewer["btnClear"];
+  button["ClickButton"]();
+  button["ClickButton"]();
+  button["ClickButton"]();
+  button["ClickButton"]();
+  window["treeAttributes"]["ClickItem"]("|[3]|[18]");
+  scrollViewer["HScroll"]["Pos"] = 0;
+  var autoSelectTextBox = scrollViewer["lstStringInspector"]["txtAttribValue"];
+  autoSelectTextBox["Click"](109, 12);
+  autoSelectTextBox["Keys"]("6771");
+  window["btnOk"]["ClickButton"]();
+  aqObject["CheckProperty"](grid3["ccContent"]["DataRow"], "Enabled", cmpEqual, true);
+}

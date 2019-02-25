@@ -1,0 +1,51 @@
+﻿//USEUNIT LaunchApplication
+//USEUNIT TradeCapture
+//USEUNIT RiskManager
+//USEUNIT Positions
+
+var Trade1, Trade2
+
+
+function Main()
+{
+  
+  //Launch Risk Manager application
+  LaunchRiskManager();
+  
+  //Create a Real Portifoli on QA(World) portifolio
+  Project["Variables"]["RealPortID"] = CreateRealPortfolio("3.3.2 Test","000Auto"+randInt(1000,9999));
+  Log["Message"]("Newly Created Real Portfolio ID is: " +Project["Variables"]["RealPortID"]);
+  
+  //Launch Trade Capture application
+  LaunchTradeCapture();
+  
+  // Create two phisical Trades
+  Project["Variables"]["PhyTrade1"] = CreatePhysicalTrade(1,Project["Variables"]["RealPortID"])
+  Log["Message"]("Trade1 ID:"+Project["Variables"]["PhyTrade1"])
+  Delay(5000)
+  Project["Variables"]["PhyTrade2"] = CreatePhysicalTrade(2,Project["Variables"]["RealPortID"])  
+  Log["Message"]("Trade1 ID:"+Project["Variables"]["PhyTrade2"])
+  
+  // Check for Risk Manager application 
+  if(!CheckRiskMOpen())
+  {
+    LaunchRiskManager()
+  }
+  else
+  {
+    Aliases["RiskManager"]["RiskManagerForm"]["Activate"]();
+  }
+  
+  //Open Real Portfolio by ID
+  SearchPortfolioByNum(Project["Variables"]["RealPortID"]);
+  
+  // Read Positions Data from Excel 
+  ReadPositionData();
+  
+  
+  
+  //Validate Positions Data with Portfolio Positions
+  ValidatePositions();
+  
+  
+}

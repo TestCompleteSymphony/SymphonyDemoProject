@@ -1,0 +1,14 @@
+﻿function ClosingRiskManager()
+{ 
+  //Close the RiskManager Application
+  Log["Message"]("closing risk manager")
+  TestedApps["RiskManager"]["Close"]();
+  aqUtils["Delay"](1000,"closing risk manager"); // Wait until the application is closed
+   
+}
+function ClosingTradeCapture()
+{ 
+    //Close the RiskManager Application
+   TestedApps["TradeCapture"]["Close"]();
+   aqUtils["Delay"](1000); // Wait until the application is closed
+}

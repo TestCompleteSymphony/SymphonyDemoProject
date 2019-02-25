@@ -1,0 +1,129 @@
+﻿//USEUNIT SelectionRoutines
+//USEUNIT LaunchApplication
+
+var Period = [];
+var Comm_RiskQty = [];
+var Comm_UOM = [];
+var GT_RiskQty = [];
+var GT_UOM = [];
+
+function ReadPositionData()
+{
+  var i;
+  //Getting the excel sheet control
+    
+  var ExDriver=DDT["ExcelDriver"](aqConvert["VarToStr"](Files["FileNameByName"]("TestData_xlsx")),"Position",true);
+  var ColumnCount = ExDriver["ColumnCount"];
+  Log.Message("Total number columns are "+ ColumnCount);
+	  
+  //Setting the excel sheet focus to first cell value     
+  ExDriver.First();
+  i=0;
+  while(!ExDriver.EOF())
+  {
+    
+    for(var column=1;column<ColumnCount;column++) 
+    {
+     
+      switch(aqConvert["VarToStr"](ExDriver["ColumnName"](column)))
+      {
+        case "Period":
+          Period[i] = aqConvert.VarToStr(ExDriver["Value"](column));
+          break;
+        case "Commodity Risk Quantity":
+          Comm_RiskQty[i] = aqConvert.VarToStr(ExDriver["Value"](column));
+          break;  
+        case "Commodity UOM":
+          Comm_UOM[i] = aqConvert.VarToStr(ExDriver["Value"](column));
+          break;
+        case "Risk Quantity":
+          GT_RiskQty[i] = aqConvert.VarToStr(ExDriver["Value"](column));
+          break;  
+        case "UOM":
+          GT_UOM[i] = aqConvert.VarToStr(ExDriver["Value"](column));
+          break;
+        default:
+         break;          
+      }
+      
+    }
+
+    ExDriver["Next"]()
+    i++;
+  }
+}
+
+function ValidatePositions()
+{
+  var items = [[],[]];
+  for (var x=0;x<2;x++)
+  {
+    for(var l=0;l<4;l++)
+    {
+      if(l==0){ items[x][l]=Comm_RiskQty[x]; }
+      else if(l==1){ items[x][l]=Comm_UOM[x]; }
+      else if(l==2){ items[x][l]=GT_RiskQty[x]; }
+      else if(l==3){ items[x][l]=GT_UOM[x]; }
+    }
+  }
+  
+  var PortfolioSplitterCntl = Aliases["RiskManager"]["RiskManagerForm"]["horizontalPortfolioSplitterControl"]
+  var PositionPivotGridPanel = PortfolioSplitterCntl["SplitGroupPanel2"]["inspectablePivotGrid1"]["scPivotAndLower"]["SplitGroupPanel"]["panelControlForPositionPivotGrid"]
+  var PositionGrid = PositionPivotGridPanel["scTabAndSelector"]["SplitterPanel"]["xtraTabControl1"]["TabPageWithUomPivot"]["pgcPositions"]
+  
+  PositionPivotGridPanel["scTabAndSelector"]["SplitterPanel"]["xtraTabControl1"]["TabPageWithUomPivot"]["pcUomAndDecimals"]["ZeroCheckbox"]["ClickButton"](cbChecked);
+
+  var RCount = PositionGrid["Cells"]["RowCount"]
+  var ColCount = PositionGrid["Cells"]["ColumnCount"]
+
+  for (var row = 0; row < RCount; row++)
+  {
+    for(var col = 0; col < ColCount; col++)
+    {
+      if(getPGcellInfo(PositionGrid,col,row)==items[row][col])
+      {
+        Log.Picture(PositionGrid,"Position is as expected ");
+      }
+      else
+      {
+        Log.Error("Position incorrect",pmHighest);
+      }
+    }
+  }
+}
+function getPGcellInfo(PositionGrid,x,y)
+{
+  var cellW;   //Width of cell
+  var cellH;    //Height of cell
+  var cellL;    //Left position of cell
+  var cellT;    //Top position of cell
+  var cellX;    //On-screen X coordinate of cell centre
+  var cellY;    //On-screen Y coordinate of cell centre
+  var colHeading;    //Column heading for specified cell
+  var rowHeading;    //Row heading for specified cell
+  var rowIndex;    //Index number of current row
+  var cellValue;    //Actual (unformatted) cell value
+  var cellDisplay;    //Display value of cell
+    
+  cellW=PositionGrid["Cells"]["GetCellInfo"](x, y)["Bounds"]["get_Width"]();
+  cellH=PositionGrid["Cells"]["GetCellInfo"](x, y)["Bounds"]["get_Height"]();
+  cellL=PositionGrid["Cells"]["GetCellInfo"](x, y)["Bounds"]["get_Left"]();
+  cellT=PositionGrid["Cells"]["GetCellInfo"](x, y)["Bounds"]["get_Top"]();
+  cellX=cellL+(cellW/2);
+  cellY=cellT+(cellH/2);
+  PositionGrid["Click"](cellX,cellY);
+  rowIndex=PositionGrid["Cells"]["GetFocusedCellInfo"]()["RowFieldIndex"];
+  colHeading=PositionGrid["Cells"]["GetFocusedCellInfo"]()["DataField"]["Caption"];
+  rowHeading=PositionGrid["Cells"]["GetFocusedCellInfo"]()["Data"]["GetRowValue"](rowIndex);
+  cellDisplay=PositionGrid["Cells"]["GetCellInfo"](x, y)["DisplayText"];
+  Log.Message(colHeading + "/" + rowHeading + ": (" + x + ", " + y + "): " + " displayed as: " + cellDisplay);
+  
+  return aqString.Trim(cellDisplay,3);
+
+}
+
+function main()
+{
+  ReadPositionData();
+  ValidatePositions()
+}
